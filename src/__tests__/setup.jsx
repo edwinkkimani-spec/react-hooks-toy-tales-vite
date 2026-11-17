@@ -1,9 +1,7 @@
-import { afterEach } from 'vitest'
-import { cleanup } from '@testing-library/react'
-import '@testing-library/jest-dom/vitest'
-import fetch from 'node-fetch';
+import { afterEach, vi } from 'vitest';
+import { cleanup } from '@testing-library/react';
+import '@testing-library/jest-dom/vitest';
 
-global.fetch = fetch
 
 global.baseToys = [
     {
@@ -60,12 +58,26 @@ global.alternateToys = [
 ]
   
 global.setFetchResponse = (val) => {
-    global.fetch = vi.fn(() => Promise.resolve({
-        json: () => Promise.resolve(val),
-        ok: true,
-        status: 200
-    }))
-}
+  const mockFetch = vi.fn(() =>
+    Promise.resolve({
+      json: () => Promise.resolve(val),
+      ok: true,
+      status: 200,
+    })
+  );
+
+  globalThis.fetch = mockFetch;
+  global.fetch = mockFetch;
+  window.fetch = mockFetch;
+};
+HTMLFormElement.prototype.requestSubmit = function () {
+  this.dispatchEvent(
+    new Event("submit", {
+      bubbles: true,
+      cancelable: true,
+    })
+  );
+};
 
 afterEach(() => {
     cleanup();
